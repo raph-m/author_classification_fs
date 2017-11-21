@@ -16,7 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp
 #SOURCES += src/*.cpp
-INCLUDEPATH+=/Users/mariannedevriendt/Desktop/eigen-eigen-67e894c6cd8f/
+INCLUDEPATH+=../eigen-eigen-67e894c6cd8f/
 #LIBS+=lieu de la librairie compilée
 
 DISTFILES += \
