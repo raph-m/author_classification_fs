@@ -14,10 +14,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    pca.cpp
 #SOURCES += src/*.cpp
 INCLUDEPATH+=../eigen-eigen-67e894c6cd8f/
 #LIBS+=lieu de la librairie compilée
 
 DISTFILES += \
     .gitignore
+
+HEADERS += \
+    pca.h
