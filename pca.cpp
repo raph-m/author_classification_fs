@@ -9,11 +9,10 @@ pca::pca()
 
 }
 
-int rows=20;
-int col=10;
 float parameter = 0.98;
 
 double mean(MatrixXf& origin, int i){
+    int rows = origin.rows();
     double mean =0;
     for(int j=0; j<rows; j++){
         mean+= origin(j,i);
@@ -24,6 +23,7 @@ double mean(MatrixXf& origin, int i){
 
 
 double variance(MatrixXf&  origin, double& mean,int i){
+    int rows = origin.rows();
     double variance=0;
     for(int j=0; j<rows; j++){
         variance+=pow(origin(i,j),2);
@@ -37,6 +37,8 @@ double variance(MatrixXf&  origin, double& mean,int i){
 //le tableau mean sert à stocker les moyennes
 //on calcule les moyennes des variables aleatoires et on les centre
 void adjust_data(MatrixXf& origin, VectorXf& means){
+    int col = origin.cols();
+    int rows = origin.rows();
     for(int i=0; i<col; i++){
         float mean =0;
         for(int j=0; j<rows;j++){
@@ -59,13 +61,13 @@ void adjust_data(MatrixXf& origin, VectorXf& means){
     }
 }
 
-double compute_covariance(const MatrixXf& d, int i, int j){
-    double cov=0;
+float compute_covariance(const MatrixXf& d, int i, int j){
+    float cov=0;
     int n = d.rows();
     for(int k=0; k<n;k++){
         cov+= d(k,i)*d(k,j);
     }
-    return( (double)cov/(d.rows()));
+    return( (float)cov/(d.rows()-1));
 }
 
 void compute_covariance_matrix( const MatrixXf& d, MatrixXf& covar_mat){
@@ -83,6 +85,9 @@ void compute_covariance_matrix( const MatrixXf& d, MatrixXf& covar_mat){
             }
         }
     }
+    else{
+        cout<<"pb de dimension calcul de covariance "<<endl;
+    }
 }
 
 //Calcul des valeurs et vecteurs propres de la matrice de covariance
@@ -92,7 +97,7 @@ EigenSolver<MatrixXf> eigen( MatrixXf& origin){
     return es;
 }
 
-void transpose(MatrixXf& origin, MatrixXf& transp){
+void transpose(MatrixXf origin, MatrixXf& transp){
     for(int i=0; i<origin.cols();i++){
         for(int j=0; j<origin.rows(); j++){
             transp(i,j)=origin(j,i);
@@ -101,19 +106,18 @@ void transpose(MatrixXf& origin, MatrixXf& transp){
 }
 
 //retourne A*B dans C
-void multiply(MatrixXf& A ,MatrixXf& B, MatrixXf& C){
-    int a = A.rows();
-    int n = A.cols();
-    int b = B.cols();
-    if(n!=(int)B.rows()){cout<<"erreur de dimension"<<endl;}
+MatrixXf multiply(const MatrixXf A ,const MatrixXf B){
+    if(A.cols()!=(int)B.rows()){cout<<"erreur de dimension"<<endl;}
     else{
-        for(int i=0; i<a; i++){
-            for(int j=0; j<b; j++){
-                for(int k=0; k<n;k++){
+        MatrixXf C(A.rows(),B.cols());
+        for(int i=0; i<A.rows(); i++){
+            for(int j=0; j<B.cols(); j++){
+                for(int k=0; k<A.cols();k++){
                     C(i,j)+= A(i,k)*B(k,j);
                 }
             }
         }
+          return C;
     }
 }
 
@@ -135,7 +139,7 @@ int decreaseDim(VectorXf& eigenVal){
 
 
 void writeToText(string name, MatrixXf matrix){
-    std::ofstream file(name+".csv");
+   /* std::ofstream file(name+".csv");
     if(file.is_open()){
         for(int i=0; i<matrix.rows();i++){
             for(int j=0; j<matrix.cols();j++){
@@ -144,7 +148,20 @@ void writeToText(string name, MatrixXf matrix){
             }
             file<<endl;
         }
-    }
+    }*/
+    std::string a = "../resultaPCA.csv";
+
+            std::ofstream myfile(a.c_str(), std::ofstream::out | std::ofstream::app);
+            if (myfile.is_open()){
+                // myfile.seekp(0, ios::end); // On se déplace à la fin du fichier
+                for(int i=0;i<matrix.rows();i++){
+                    for(int j=0; j<matrix.cols();j++){
+                        if( j<matrix.cols()-1){myfile<<matrix(i,j)<<",";}
+                        else{ myfile<<matrix(i,j);}
+                    }
+                    myfile <<endl;
+                }
+            }
 }
 
 template<typename M>
@@ -164,30 +181,46 @@ M load_csv (const std::string & path) {
             colonnes+=1;
 
         }
-        col=colonnes-1;
+        //col=colonnes-1;
         ++r;
     }
 
-    rows=r;
+    //rows=r;
     return Map<const Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, RowMajor>>(values.data(), r, values.size()/r);
 }
 
-void principalComponentAnalysis(const std::string& pathData){
-    //MatrixXf origin = load_csv<MatrixXf>(pathData);
+void principalComponentAnalysis(const std::string& pathData, const std::string& pathTest){
 
      MatrixXf origin2 = load_csv<MatrixXf>(pathData);
+     cout <<origin2<<endl;
+     int rows = origin2.rows();
+     int col = origin2.cols()-1;
+    //int rows=20;
+    //int col=5;
+    //int rowsT=20;
      MatrixXf origin(rows,col);
-
-     cout<< "lignes origin " << origin2.rows() << "  "<< rows<<endl;
-     cout<<"colonnes origin "<<origin2.cols()<<"  "<< col <<endl;
+     MatrixXf test2 = load_csv<MatrixXf>(pathTest);
+     int rowsT = test2.rows();
+     MatrixXf test (rowsT,col);
      for(int i=0; i<rows;i++){
-     for(int j=0;j<col;j++){
-     origin(i,j)=origin2(i,j+1);
-     //origin(i,j)=rand();
+        for(int j=0;j<col;j++){
+            origin(i,j)=origin2(i,j+1);
+          // origin(i,j)=i*(j+2)/3;//(float)rand()/RAND_MAX;
+        }
      }
+     for(int i=0; i<rowsT;i++){
+        for(int j=0;j<col;j++){
+            test(i,j)=test2(i,j+1);
+            // test(i,j)=rand();
+        }
      }
+
     VectorXf means(col);
+    VectorXf meansTest(col);
     adjust_data(origin,means);
+    adjust_data(test,meansTest);
+    cout<<"origin "<<origin<<endl;
+    cout<<"test "<<test<<endl;
     MatrixXf covar_matrix(col,col);
     compute_covariance_matrix(origin,covar_matrix);
 
@@ -220,28 +253,51 @@ void principalComponentAnalysis(const std::string& pathData){
     cout<<"nbVec "<<nbVec<<endl;
     cout<<"vecteurs propres réduits"<<endl;
 
-    MatrixXf baseChange(rows,col);
     MatrixXf transposeEigen(col,col);
-    transpose(eigenVec,transposeEigen);
-    cout<<"transpose Eigen "<< transposeEigen<<endl;
-    cout<< "origin rows cols "<< origin.rows() <<" "<<origin.cols()<<endl;
-    cout<< "transEig rows cols "<< transposeEigen.rows() <<" "<<transposeEigen.cols()<<endl;
-    cout<< "basChaneg rows cols "<< baseChange.rows() <<" "<<baseChange.cols()<<endl;
-    multiply(origin,transposeEigen,baseChange);
-    cout<<"baseChange "<<endl;
-    cout<<baseChange<<endl;
 
-    MatrixXf final(rows,nbVec);
+    transpose(eigenVec,transposeEigen);
+    cout<<"transpose Eigen"<<endl;
+    cout<<transposeEigen<<endl;
+
+    MatrixXf baseChange = multiply(origin,transposeEigen);
+    cout<<"base chaneg"<<endl;
+    cout<<baseChange<<endl;
+    MatrixXf baseChangeTest = multiply(test,transposeEigen);
+
+    cout<<"base changeT"<<endl;
+    cout<<baseChangeTest<<endl;
+
+
+    cout<<"origin "<<origin<<endl;
+    cout<<"test "<<test<<endl;
+
+    MatrixXf final(rows,nbVec+1);
+    MatrixXf finalTest(rowsT,nbVec+1);
+
     for(int i=0; i<rows;i++){
         for(int j=0; j<nbVec;j++){
-            final(i,j)=baseChange(i,j);
+            if(j==0){
+               final(i,0)=origin2(i,0);
+            }
+                final(i,j+1)=baseChange(i,j);
+
+        }
+    }
+    for(int i=0; i<rowsT;i++){
+        for(int j=0; j<nbVec;j++){
+            if(j==0){
+                finalTest(i,j)=test2(i,0);
+            }
+                finalTest(i,j+1)=baseChangeTest(i,j);
         }
     }
     cout<<"donnees finales "<<endl;
     cout<<final<<endl;
+    cout<<"donnees finales test "<<endl;
+    cout<<finalTest<<endl;
 
-    cout<<"lignes finales "<< final.rows()<<endl;
-    cout<<"colonnes finales "<< final.cols()<<endl;
 
-    writeToText("resultDimReduction", final);
+
+
+    //writeToText("resultDimReduction", final);
 }

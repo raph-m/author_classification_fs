@@ -20,6 +20,7 @@
 
 int main(int argc, char *argv[]){
         std::string c = "/Users/mariannedevriendt/Desktop/results.txt";
-        principalComponentAnalysis(c);
+        std::string test = "/Users/mariannedevriendt/Desktop/results.txt";
+        principalComponentAnalysis(c,test);
         return 0;
 }
