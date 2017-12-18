@@ -1,4 +1,4 @@
-#include "pca.h"
+#include "author_classification_fs/pca.h"
 #include <vector>
 
 using namespace std;
@@ -215,17 +215,17 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     VectorXf meansTest(col);
     adjust_data(origin,means);
     adjust_data(test,meansTest);
-    cout<<"origin " << endl;
+    cout<<"Data loaded " << endl;
     // cout <<origin<<endl;
-    cout<<"test"<< endl;
+    // cout<<"test"<< endl;
     //cout <<test<<endl;
     MatrixXf covar_matrix(col,col);
     compute_covariance_matrix(origin,covar_matrix);
 
-    cout<< "covariance calculee" <<endl;
+    cout<< "Covariance computed" <<endl;
     //cout<< covar_matrix<<endl;
-    cout<<" covar rows "<< covar_matrix.rows()<<endl;
-    cout<<"covar cols "<<covar_matrix.cols()<<endl;
+    //cout<<" covar rows "<< covar_matrix.rows()<<endl;
+    //cout<<"covar cols "<<covar_matrix.cols()<<endl;
 
 
     EigenSolver<MatrixXf> eig = eigen(covar_matrix);
@@ -233,9 +233,9 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     MatrixXf final_data(rows,col);
     MatrixXf eigenVec(col,col);
 
-    cout<<"The eigenvalues"<<endl;
+    //cout<<"The eigenvalues"<<endl;
     //cout<<eig.eigenvalues().transpose()<<endl;
-    cout<<"The eigenvectors"<<endl;
+    //cout<<"The eigenvectors"<<endl;
 
     for(int i=0; i<col;i++){
         eigenVal(i)= eig.eigenvalues()[i].real();
@@ -248,26 +248,26 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     //cout<<eigenVec<<endl;
 
     int nbVec= decreaseDim(eigenVal, parameter);
-    cout<<"nbVec "<<nbVec<<endl;
-    cout<<"vecteurs propres réduits"<<endl;
+    //cout<<"nbVec "<<nbVec<<endl;
+    cout<<"Eigen vectors produced"<<endl;
 
     MatrixXf transposeEigen(col,col);
 
     transpose(eigenVec,transposeEigen);
-    cout<<"transpose Eigen"<<endl;
+    //cout<<"transpose Eigen"<<endl;
     //cout<<transposeEigen<<endl;
 
     MatrixXf baseChange = multiply(origin,transposeEigen);
-    cout<<"base chaneg"<<endl;
+    //cout<<"base chaneg"<<endl;
     //cout<<baseChange<<endl;
     MatrixXf baseChangeTest = multiply(test,transposeEigen);
 
-    cout<<"base changeT"<<endl;
+    //cout<<"base changeT"<<endl;
     //cout<<baseChangeTest<<endl;
 
 
-    cout<<"origin "<<origin<<endl;
-    cout<<"test "<<test<<endl;
+    //cout<<"origin "<<origin<<endl;
+    //cout<<"test "<<test<<endl;
 
     MatrixXf finalMatrix(rows,nbVec+2);
     MatrixXf finalTest(rowsT,nbVec+2);
@@ -289,9 +289,9 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
                 finalTest(i,j+2)=baseChangeTest(i,j);
         }
     }
-    cout<<"donnees finales "<<endl;
+    //cout<<"donnees finales "<<endl;
     //cout<<finalMatrix<<endl;
-    cout<<"donnees finales test "<<endl;
+    cout<<"PCA over"<<endl;
     //cout<<finalTest<<endl;
 
     writeToText("../finalMatrix.csv", finalMatrix);
