@@ -9,8 +9,6 @@ pca::pca()
 
 }
 
-float parameter = 0.98;
-
 double mean(MatrixXf& origin, int i){
     int rows = origin.rows();
     double mean =0;
@@ -121,7 +119,7 @@ MatrixXf multiply(const MatrixXf A ,const MatrixXf B){
     }
 }
 
-int decreaseDim(VectorXf& eigenVal){
+int decreaseDim(VectorXf& eigenVal, float parameter){
     float s=0;
     for(int i=0; i<eigenVal.size(); i++){
         s+=eigenVal(i);
@@ -149,9 +147,7 @@ void writeToText(string name, MatrixXf matrix){
             file<<endl;
         }
     }*/
-    std::string a = "../resultaPCA.csv";
-
-            std::ofstream myfile(a.c_str(), std::ofstream::out | std::ofstream::app);
+            std::ofstream myfile(name.c_str(), std::ofstream::out);
             if (myfile.is_open()){
                 // myfile.seekp(0, ios::end); // On se déplace à la fin du fichier
                 for(int i=0;i<matrix.rows();i++){
@@ -189,12 +185,12 @@ M load_csv (const std::string & path) {
     return Map<const Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, RowMajor>>(values.data(), r, values.size()/r);
 }
 
-void principalComponentAnalysis(const std::string& pathData, const std::string& pathTest){
+void principalComponentAnalysis(const std::string& pathData, const std::string& pathTest, float parameter){
 
      MatrixXf origin2 = load_csv<MatrixXf>(pathData);
-     cout <<origin2<<endl;
+     //cout <<origin2<<endl;
      int rows = origin2.rows();
-     int col = origin2.cols()-1;
+     int col = origin2.cols()-2;
     //int rows=20;
     //int col=5;
     //int rowsT=20;
@@ -204,13 +200,13 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
      MatrixXf test (rowsT,col);
      for(int i=0; i<rows;i++){
         for(int j=0;j<col;j++){
-            origin(i,j)=origin2(i,j+1);
+            origin(i,j)=origin2(i,j+2);
           // origin(i,j)=i*(j+2)/3;//(float)rand()/RAND_MAX;
         }
      }
      for(int i=0; i<rowsT;i++){
         for(int j=0;j<col;j++){
-            test(i,j)=test2(i,j+1);
+            test(i,j)=test2(i,j+2);
             // test(i,j)=rand();
         }
      }
@@ -219,13 +215,15 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     VectorXf meansTest(col);
     adjust_data(origin,means);
     adjust_data(test,meansTest);
-    cout<<"origin "<<origin<<endl;
-    cout<<"test "<<test<<endl;
+    cout<<"origin " << endl;
+    // cout <<origin<<endl;
+    cout<<"test"<< endl;
+    cout <<test<<endl;
     MatrixXf covar_matrix(col,col);
     compute_covariance_matrix(origin,covar_matrix);
 
     cout<< "covariance calculee" <<endl;
-    cout<< covar_matrix<<endl;
+    //cout<< covar_matrix<<endl;
     cout<<" covar rows "<< covar_matrix.rows()<<endl;
     cout<<"covar cols "<<covar_matrix.cols()<<endl;
 
@@ -236,7 +234,7 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     MatrixXf eigenVec(col,col);
 
     cout<<"The eigenvalues"<<endl;
-    cout<<eig.eigenvalues().transpose()<<endl;
+    //cout<<eig.eigenvalues().transpose()<<endl;
     cout<<"The eigenvectors"<<endl;
 
     for(int i=0; i<col;i++){
@@ -247,9 +245,9 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     }
 
 
-    cout<<eigenVec<<endl;
+    //cout<<eigenVec<<endl;
 
-    int nbVec= decreaseDim(eigenVal);
+    int nbVec= decreaseDim(eigenVal, parameter);
     cout<<"nbVec "<<nbVec<<endl;
     cout<<"vecteurs propres réduits"<<endl;
 
@@ -257,47 +255,44 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
 
     transpose(eigenVec,transposeEigen);
     cout<<"transpose Eigen"<<endl;
-    cout<<transposeEigen<<endl;
+    //cout<<transposeEigen<<endl;
 
     MatrixXf baseChange = multiply(origin,transposeEigen);
     cout<<"base chaneg"<<endl;
-    cout<<baseChange<<endl;
+    //cout<<baseChange<<endl;
     MatrixXf baseChangeTest = multiply(test,transposeEigen);
 
     cout<<"base changeT"<<endl;
-    cout<<baseChangeTest<<endl;
+    //cout<<baseChangeTest<<endl;
 
 
     cout<<"origin "<<origin<<endl;
     cout<<"test "<<test<<endl;
 
-    MatrixXf final(rows,nbVec+1);
-    MatrixXf finalTest(rowsT,nbVec+1);
+    MatrixXf finalMatrix(rows,nbVec+2);
+    MatrixXf finalTest(rowsT,nbVec+2);
 
     for(int i=0; i<rows;i++){
         for(int j=0; j<nbVec;j++){
-            if(j==0){
-               final(i,0)=origin2(i,0);
+            if(j==0 || j==1){
+               finalMatrix(i,j)=origin2(i,j);
             }
-                final(i,j+1)=baseChange(i,j);
+                finalMatrix(i,j+2)=baseChange(i,j);
 
         }
     }
     for(int i=0; i<rowsT;i++){
         for(int j=0; j<nbVec;j++){
-            if(j==0){
-                finalTest(i,j)=test2(i,0);
+            if(j==0 || j==1){
+                finalTest(i,j)=test2(i,j);
             }
-                finalTest(i,j+1)=baseChangeTest(i,j);
+                finalTest(i,j+2)=baseChangeTest(i,j);
         }
     }
     cout<<"donnees finales "<<endl;
-    cout<<final<<endl;
+    //cout<<finalMatrix<<endl;
     cout<<"donnees finales test "<<endl;
-    cout<<finalTest<<endl;
+    //cout<<finalTest<<endl;
 
-
-
-
-    //writeToText("resultDimReduction", final);
+    writeToText("resultDimReduction", finalMatrix);
 }

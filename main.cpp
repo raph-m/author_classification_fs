@@ -19,8 +19,9 @@
 
 
 int main(int argc, char *argv[]){
-        std::string c = "/Users/mariannedevriendt/Desktop/results.txt";
-        std::string test = "/Users/mariannedevriendt/Desktop/results.txt";
-        principalComponentAnalysis(c,test);
+        float parameter = 0.98;
+        std::string c = "../apprentissage_10.txt";
+        std::string test = "../testResult.txt";
+        principalComponentAnalysis(c,test, parameter);
         return 0;
 }
