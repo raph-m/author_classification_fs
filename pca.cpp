@@ -218,7 +218,7 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     cout<<"origin " << endl;
     // cout <<origin<<endl;
     cout<<"test"<< endl;
-    cout <<test<<endl;
+    //cout <<test<<endl;
     MatrixXf covar_matrix(col,col);
     compute_covariance_matrix(origin,covar_matrix);
 
@@ -294,5 +294,6 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     cout<<"donnees finales test "<<endl;
     //cout<<finalTest<<endl;
 
-    writeToText("resultDimReduction", finalMatrix);
+    writeToText("../finalMatrix.csv", finalMatrix);
+    writeToText("../finalTest.csv", finalTest);
 }
