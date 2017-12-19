@@ -9,6 +9,7 @@ pca::pca()
 
 }
 
+//retourne la moyenne de la colonne i de la matrice origin
 double mean(MatrixXf& origin, int i){
     int rows = origin.rows();
     double mean =0;
@@ -19,7 +20,7 @@ double mean(MatrixXf& origin, int i){
     return mean;
 }
 
-
+//retourne la variance de la colonne i de la matrice origin
 double variance(MatrixXf&  origin, double& mean,int i){
     int rows = origin.rows();
     double variance=0;
@@ -59,6 +60,7 @@ void adjust_data(MatrixXf& origin, VectorXf& means){
     }
 }
 
+//calcule la covariance des variables Xi (colonne i) et Xj (colonne j) de la matrice d
 float compute_covariance(const MatrixXf& d, int i, int j){
     float cov=0;
     int n = d.rows();
@@ -68,6 +70,7 @@ float compute_covariance(const MatrixXf& d, int i, int j){
     return( (float)cov/(d.rows()-1));
 }
 
+//calcule la matrice de covariance de la matrice d
 void compute_covariance_matrix( const MatrixXf& d, MatrixXf& covar_mat){
     int dim= d.cols();
     if(dim== covar_mat.rows() && dim==covar_mat.cols()){
@@ -95,6 +98,7 @@ EigenSolver<MatrixXf> eigen( MatrixXf& origin){
     return es;
 }
 
+//calcule la transposee d'une matrice
 void transpose(MatrixXf origin, MatrixXf& transp){
     for(int i=0; i<origin.cols();i++){
         for(int j=0; j<origin.rows(); j++){
@@ -119,6 +123,7 @@ MatrixXf multiply(const MatrixXf A ,const MatrixXf B){
     }
 }
 
+//retourne le nombre de colonne a garder par rapport au parametre
 int decreaseDim(VectorXf& eigenVal, float parameter){
     float s=0;
     for(int i=0; i<eigenVal.size(); i++){
@@ -135,7 +140,7 @@ int decreaseDim(VectorXf& eigenVal, float parameter){
     return indice;
 }
 
-
+//ecrit le resultat de la matrice dans le fichier name
 void writeToText(string name, MatrixXf matrix){
    /* std::ofstream file(name+".csv");
     if(file.is_open()){
@@ -160,6 +165,7 @@ void writeToText(string name, MatrixXf matrix){
             }
 }
 
+//charge les donnees d'un fichier et retourne une matrice
 template<typename M>
 M load_csv (const std::string & path) {
     std::ifstream indata;
@@ -185,6 +191,16 @@ M load_csv (const std::string & path) {
     return Map<const Matrix<typename M::Scalar, M::RowsAtCompileTime, M::ColsAtCompileTime, RowMajor>>(values.data(), r, values.size()/r);
 }
 
+//fonction de calcule de la PCA
+//on charge les donnees d'apprentissage a pathData
+//chargement des donnees des textes a tester pathTest
+//parametre de la PCA parameter
+//centre et reduit les variables aleatoires (les colonnes de la matrice)
+//Calcul de la matrice de covariance (des donnees d'apprentissage)
+//Recherche des valeurs propres et vecteurs propres de la matrice de covariance
+//Calcul le nombre de dimension a garder et calcul la matrice de changement de base (reduction de dimension)
+//Changement de base : donnees d'apprestissage et de test
+//ecrit les resultats dans un fichier csv
 void principalComponentAnalysis(const std::string& pathData, const std::string& pathTest, float parameter){
 
      MatrixXf origin2 = load_csv<MatrixXf>(pathData);
@@ -247,6 +263,7 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
 
     //cout<<eigenVec<<endl;
 
+    //nbVec est le nombre de colonnes a garder
     int nbVec= decreaseDim(eigenVal, parameter);
     //cout<<"nbVec "<<nbVec<<endl;
     cout<<"Eigen vectors produced"<<endl;
@@ -257,6 +274,7 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     //cout<<"transpose Eigen"<<endl;
     //cout<<transposeEigen<<endl;
 
+    //matrice de changement de base
     MatrixXf baseChange = multiply(origin,transposeEigen);
     //cout<<"base chaneg"<<endl;
     //cout<<baseChange<<endl;
@@ -269,9 +287,11 @@ void principalComponentAnalysis(const std::string& pathData, const std::string& 
     //cout<<"origin "<<origin<<endl;
     //cout<<"test "<<test<<endl;
 
+    //matrices contenant les donnees finales
     MatrixXf finalMatrix(rows,nbVec+2);
     MatrixXf finalTest(rowsT,nbVec+2);
 
+    //on garde les dimensions importantes a partir de NbVec
     for(int i=0; i<rows;i++){
         for(int j=0; j<nbVec;j++){
             if(j==0 || j==1){
